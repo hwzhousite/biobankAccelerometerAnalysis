@@ -124,13 +124,13 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     if cutpointsModelMixed: 
         labelsMixed = e['VPA'].replace(True, "cutpointVigorous")
         print(labelsMixed.head())
-        labelsMixed.loc[(e['MVPA'] == True) & (e['VPA'] == False),['VPA']] = "cutpointModerate"
+        labelsMixed.where(cond = ((e['MVPA'] == False) | (e['VPA'] == True)),  other = "cutpointModerate", inplace = True) 
         print(labelsMixed.head())
-        labelsMixed.loc[labelsMixed['VPA'] == False, ['VPA']] = pd.DataFrame(labels)['labels']
+        labelsMixed.where(cond = (e['MVPA'] == True),  other = pd.DataFrame(labels), inplace = True)
         print(labelsMixed.head())
-        labelsMixed.loc[(labelsMixed['VPA']!= 'sedentary') & (labelsMixed['VPA']!= 'sleep') & (labelsMixed['VPA']!= 'cutpointModerate') & (labelsMixed['VPA']!= 'cutpointVigorous'),['VPA']] = "mixedLight"
+        labelsMixed.where(cond = ((labelsMixed == 'sedentary') | (labelsMixed == 'sleep') & (labelsMixed== 'cutpointModerate') & (labelsMixed== 'cutpointVigorous')), other = "mixedLight", inplace = True)
         print(labelsMixed.head())
-        labels = labelsMixed['VPA'].to_list()
+        labels = labelsMixed.tolist()
 
     # calculate empirical cumulative distribution function of vector magnitudes
     if intensityDistribution:
