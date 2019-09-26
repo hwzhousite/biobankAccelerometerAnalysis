@@ -132,6 +132,7 @@ def getActivitySummary(epochFile, nonWearFile, summary,
         print(labelsMixed.head())
         e['label'] = labelsMixed
         labels = e['label'].unique().tolist()
+        print(labels)
         e['mixedLight'] = (e['label'] == 'mixedLight')
         e['mixedVigorous']= (e['label'] == 'mixedVigorous')
         e['mixedModerate']= (e['label'] == 'mixedModerate')
