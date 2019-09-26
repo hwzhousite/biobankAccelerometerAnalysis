@@ -135,11 +135,11 @@ def getActivitySummary(epochFile, nonWearFile, summary,
         e['label'] = labelsMixed
         labels = e['label'].unique().tolist()
         print(labels)
-        e['mixedLight'] = (e['label'] == 'mixedLight')
-        e['mixedVigorous']= (e['label'] == 'mixedVigorous')
-        e['mixedModerate']= (e['label'] == 'mixedModerate')
-        e['mixedSedentary']= (e['label'] == 'mixedSedentary')
-        e['mixedSleep']= (e['label'] == 'mixedSleep')
+        e['mixedLightImputed'] = (e['label'] == 'mixedLight')
+        e['mixedVigorousImputed']= (e['label'] == 'mixedVigorous')
+        e['mixedModerateImputed']= (e['label'] == 'mixedModerate')
+        e['mixedSedentaryImputed']= (e['label'] == 'mixedSedentary')
+        e['mixedSleepImputed']= (e['label'] == 'mixedSleep')
 
 
     # calculate empirical cumulative distribution function of vector magnitudes
@@ -575,7 +575,7 @@ def writeMovementSummaries(e, labels, summary):
     # sumarise each type by: overall, week day/end, day, and hour of day
     for accType in activityTypes:
         col = accType + 'Imputed'
-        if accType in ['MVPA', 'VPA', 'mixedLight', 'mixedModerate', 'mixedVigorous', 'mixedSedentary', 'mixedSleep']:
+        if accType in ['MVPA', 'VPA']:
             col = accType
 
         # overall / weekday / weekend summaries
