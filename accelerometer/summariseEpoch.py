@@ -125,7 +125,7 @@ def getActivitySummary(epochFile, nonWearFile, summary,
         labelsMixed = e['VPA'].replace(True, "cutpointVigorous")
         labelsMixed.rename(columns = {'VPA': 'new_activity_label'}, inplace = True )
         labelsMixed['new_activity_label'].loc[(e['MVPA'] == True) & (e['VPA'] == False)] = "cutpointModerate"
-        labelsMixed['new_activity_label'].loc[labelsMixed['new_activity_label'] == False] = pd.DataFrame(labels).labels.loc[]
+        labelsMixed['new_activity_label'].loc[labelsMixed['new_activity_label'] == False] = pd.DataFrame(labels)['labels']
         labelsMixed['new_activity_label'].loc[(labelsMixed['new_activity_label']!= 'sedentary') & (labelsMixed['new_activity_label']!= 'sleep') & (labelsMixed['new_activity_label']!= 'cutpointModerate') & (labelsMixed['new_activity_label']!= 'cutpointVigorous')] = "mixedLight"
         labels = labelsMixed['new_activity_label'].to_list()
 
