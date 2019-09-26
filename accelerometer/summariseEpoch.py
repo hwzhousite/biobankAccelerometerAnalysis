@@ -123,6 +123,7 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     # rewrite labels if using mixed cutpoint- machine-learned models
     if cutpointsModelMixed: 
         labelsMixed = e['VPA'].replace(True, "cutpointVigorous")
+        print(labelsMixed.head())
         labelsMixed.rename(columns = {'VPA': 'new_activity_label'}, inplace = True )
         labelsMixed['new_activity_label'].loc[(e['MVPA'] == True) & (e['VPA'] == False)] = "cutpointModerate"
         labelsMixed['new_activity_label'].loc[labelsMixed['new_activity_label'] == False] = pd.DataFrame(labels)['labels']
