@@ -571,7 +571,7 @@ def writeMovementSummaries(e, labels, summary):
     # sumarise each type by: overall, week day/end, day, and hour of day
     for accType in activityTypes:
         col = accType + 'Imputed'
-        if accType in ['MVPA', 'VPA', 'mixedLight', 'cutpointModerate', 'cutpointVigorous']:
+        if accType in ['MVPA', 'VPA', 'mixedLight', 'mixedModerate', 'mixedVigorous', 'mixedSedentary', 'mixedSleep']:
             col = accType
 
         # overall / weekday / weekend summaries
