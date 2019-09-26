@@ -23,6 +23,8 @@ WILLETS_SciReports_COLOURS = {'sleep':'blue', 'sit.stand':'red',
     'vehicle':'darkorange', 'walking':'lightgreen', 'mixed':'green',
     'bicycling':'purple'}
 
+DOHERTY_NatComms_COLOURS_MIXED = {'mixedSleep':'blue', 'mixedSedentary':'red',
+    'mixedLight':'darkorange', 'mixedModerate':'lightgreen', 'mixedVigorous':'green'}
 
 
 def main():
@@ -40,6 +42,9 @@ def main():
     parser.add_argument('--activityModel', type=str,
                             default="activityModels/doherty2018.tar",
                             help="""trained activity model .tar file""")
+    parser.add_argument('--cutpointsModelMixed', type = str2bool, 
+                        default = False,
+                        help = """use a cutpoint activity definition for moderate and vigorous activity, with machine-learned sleep and sedentary""" )
 
     # check input is ok
     if len(sys.argv) < 3:
@@ -52,12 +57,17 @@ def main():
 
     # and then call plot function
     plotTimeSeries(args.timeSeriesFile, args.plotFile,
-        activityModel=args.activityModel)
+        activityModel=args.activityModel, cutpointsModelMixed= args.cutpointsModelMixed)
 
+def str2bool(v):
+    """
+    Used to parse true/false values from the command line. E.g. "True" -> True
+    """
 
+    return v.lower() in ("yes", "true", "t", "1")
 
 def plotTimeSeries(tsFile, plotFile,
-    activityModel="activityModels/doherty2018.tar"):
+    activityModel="activityModels/doherty2018.tar", cutpointsModelMixed = False):
     """Plot overall activity and classified activity types
 
     :param str tsFile: Input filename with .csv.gz time series data
@@ -86,8 +96,10 @@ def plotTimeSeries(tsFile, plotFile,
         if col not in [accUtils.TIME_SERIES_COL, 'imputed', 'acc', 'MET']:
             labels += [col]
     print(labels)
-    if activityModel.endswith("doherty2018.tar"):
+    if ((activityModel.endswith("doherty2018.tar") and (cutpointsModelMixed == False):
         labels_as_col = DOHERTY_NatComms_COLOURS
+    if ((activityModel.endswith("doherty2018.tar") and (cutpointsModelMixed)):
+        labels_as_col = DOHERTY_NatComms_COLOURS_MIXED
     elif activityModel.endswith("willetts2018.tar"):
         labels_as_col = WILLETS_SciReports_COLOURS
     # add imputation label colour
