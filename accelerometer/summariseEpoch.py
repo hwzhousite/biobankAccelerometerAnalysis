@@ -128,7 +128,7 @@ def getActivitySummary(epochFile, nonWearFile, summary,
         print(labelsMixed.head())
         labelsMixed.where(cond = (e['MVPA'] == True),  other = e['label'], inplace = True)
         print(labelsMixed.head())
-        labelsMixed.where(cond = ((labelsMixed == 'sedentary') | (labelsMixed == 'sleep') & (labelsMixed== 'cutpointModerate') & (labelsMixed== 'cutpointVigorous')), other = "mixedLight", inplace = True)
+        labelsMixed.where(cond = ((labelsMixed == 'sedentary') | (labelsMixed == 'sleep') | (labelsMixed== 'cutpointModerate') | (labelsMixed== 'cutpointVigorous')), other = "mixedLight", inplace = True)
         print(labelsMixed.head())
         e['label'] = labelsMixed
         labels = np.unique(e['label'])
