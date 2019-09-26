@@ -568,6 +568,7 @@ def writeMovementSummaries(e, labels, summary):
     # identify activity types to summarise
     activityTypes = ['acc', 'MVPA', 'VPA']
     activityTypes += labels
+    print(activityTypes)
     if 'MET' in e.columns:
         activityTypes.append('MET')
 
