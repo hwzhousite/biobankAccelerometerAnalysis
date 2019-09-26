@@ -125,8 +125,11 @@ def getActivitySummary(epochFile, nonWearFile, summary,
         labelsMixed = e['VPA'].replace(True, "cutpointVigorous")
         print(labelsMixed.head())
         labelsMixed.loc[(e['MVPA'] == True) & (e['VPA'] == False),['VPA']] = "cutpointModerate"
+        print(labelsMixed.head())
         labelsMixed.loc[labelsMixed['VPA'] == False, ['VPA']] = pd.DataFrame(labels)['labels']
+        print(labelsMixed.head())
         labelsMixed.loc[(labelsMixed['VPA']!= 'sedentary') & (labelsMixed['VPA']!= 'sleep') & (labelsMixed['VPA']!= 'cutpointModerate') & (labelsMixed['VPA']!= 'cutpointVigorous'),['VPA']] = "mixedLight"
+        print(labelsMixed.head())
         labels = labelsMixed['VPA'].to_list()
 
     # calculate empirical cumulative distribution function of vector magnitudes
