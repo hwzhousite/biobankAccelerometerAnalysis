@@ -122,16 +122,22 @@ def getActivitySummary(epochFile, nonWearFile, summary,
 
     # rewrite labels if using mixed cutpoint- machine-learned models
     if cutpointsModelMixed: 
-        labelsMixed = e['VPA'].replace(True, "cutpointVigorous")
+        labelsMixed = e['VPA'].replace(True, "mixedVigorous")
         print(labelsMixed.head())
-        labelsMixed.where(cond = ((e['MVPA'] == False) | (e['VPA'] == True)),  other = "cutpointModerate", inplace = True) 
+        labelsMixed.where(cond = ((e['MVPA'] == False) | (e['VPA'] == True)),  other = "mixedModerate", inplace = True) 
         print(labelsMixed.head())
         labelsMixed.where(cond = (e['MVPA'] == True),  other = e['label'], inplace = True)
         print(labelsMixed.head())
-        labelsMixed.where(cond = ((labelsMixed == 'sedentary') | (labelsMixed == 'sleep') | (labelsMixed== 'cutpointModerate') | (labelsMixed== 'cutpointVigorous')), other = "mixedLight", inplace = True)
+        labelsMixed.where(cond = ((labelsMixed == 'mixedSedentary') | (labelsMixed == 'mixedSleep') | (labelsMixed== 'mixedModerate') | (labelsMixed== 'mixedVigorous')), other = "mixedLight", inplace = True)
         print(labelsMixed.head())
         e['label'] = labelsMixed
         labels = e['label'].unique().tolist()
+        e['mixedLight'] = (e['label'] == 'mixedLight')
+        e['mixedVigorous']= (e['label'] == 'mixedVigorous')
+        e['mixedModerate']= (e['label'] == 'mixedModerate')
+        e['mixedSedentary']= (e['label'] == 'mixedSedentary')
+        e['mixedSleep']= (e['label'] == 'mixedSleep')
+
 
     # calculate empirical cumulative distribution function of vector magnitudes
     if intensityDistribution:
