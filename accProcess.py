@@ -129,7 +129,7 @@ def main():
                             default="activityModels/doherty2018.tar",
                             help="""trained activity model .tar file""")
     parser.add_argument('--cutpointsModelMixed', type=str2bool, 
-                            default=False), 
+                            default=False, 
                             help = """use a cutpoint activity definition for moderate and vigorous activity, with machine-learned sleep and sedentary""")
     parser.add_argument('--rawOutput',
                             metavar='True/False', default=False, type=str2bool,
