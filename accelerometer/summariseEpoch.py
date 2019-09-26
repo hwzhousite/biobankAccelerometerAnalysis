@@ -130,7 +130,8 @@ def getActivitySummary(epochFile, nonWearFile, summary,
         print(labelsMixed.head())
         labelsMixed.where(cond = ((labelsMixed == 'sedentary') | (labelsMixed == 'sleep') & (labelsMixed== 'cutpointModerate') & (labelsMixed== 'cutpointVigorous')), other = "mixedLight", inplace = True)
         print(labelsMixed.head())
-        labels = labelsMixed.tolist()
+        e['label'] = labelsMixed
+        labels = labelsMixed.values()
 
     # calculate empirical cumulative distribution function of vector magnitudes
     if intensityDistribution:
