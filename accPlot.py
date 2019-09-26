@@ -96,7 +96,7 @@ def plotTimeSeries(tsFile, plotFile,
         if col not in [accUtils.TIME_SERIES_COL, 'imputed', 'acc', 'MET']:
             labels += [col]
     print(labels)
-    if ((activityModel.endswith("doherty2018.tar") and (cutpointsModelMixed == False):
+    if ((activityModel.endswith("doherty2018.tar") and (cutpointsModelMixed == False)):
         labels_as_col = DOHERTY_NatComms_COLOURS
     if ((activityModel.endswith("doherty2018.tar") and (cutpointsModelMixed)):
         labels_as_col = DOHERTY_NatComms_COLOURS_MIXED
