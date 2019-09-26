@@ -131,8 +131,7 @@ def getActivitySummary(epochFile, nonWearFile, summary,
         labelsMixed.where(cond = ((labelsMixed == 'sedentary') | (labelsMixed == 'sleep') | (labelsMixed== 'cutpointModerate') | (labelsMixed== 'cutpointVigorous')), other = "mixedLight", inplace = True)
         print(labelsMixed.head())
         e['label'] = labelsMixed
-        labels = np.unique(e['label'])
-        print(labels)
+        labels = e['label'].unique().tolist()
 
     # calculate empirical cumulative distribution function of vector magnitudes
     if intensityDistribution:
@@ -566,7 +565,7 @@ def writeMovementSummaries(e, labels, summary):
     # sumarise each type by: overall, week day/end, day, and hour of day
     for accType in activityTypes:
         col = accType + 'Imputed'
-        if accType in ['MVPA', 'VPA', 'mixedLight']:
+        if accType in ['MVPA', 'VPA', 'mixedLight', 'cutpointModerate', 'cutpointVigorous']:
             col = accType
 
         # overall / weekday / weekend summaries
