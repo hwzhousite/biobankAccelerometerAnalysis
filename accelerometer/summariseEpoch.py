@@ -120,7 +120,7 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     e['MVPA'] = e['accImputed'] >= mgMVPA
     e['VPA'] = e['accImputed'] >= mgVPA
 
-    print(labels.type())
+    print(labels.head())
     # rewrite labels if using mixed cutpoint- machine-learned models
     if cutpointsModelMixed: 
         labelsMixed = e['VPA'].replace(True, "cutpointVigorous")
