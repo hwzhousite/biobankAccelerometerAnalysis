@@ -128,7 +128,7 @@ def main():
     parser.add_argument('--activityModel', type=str,
                             default="activityModels/doherty2018.tar",
                             help="""trained activity model .tar file""")
-    parser.add_argument('--cutpointsAbove100mg', type=str2bool, 
+    parser.add_argument('--cutpointsModelMixed', type=str2bool, 
                             default=False), 
                             help = """use a cutpoint activity definition for moderate and vigorous activity, with machine-learned sleep and sedentary""")
     parser.add_argument('--rawOutput',
@@ -298,7 +298,7 @@ def main():
         activityClassification=args.activityClassification, startTime=args.startTime,
         endTime=args.endTime, epochPeriod=args.epochPeriod,
         stationaryStd=args.stationaryStd, mgMVPA=args.mgMVPA,
-        mgVPA=args.mgVPA, activityModel=args.activityModel,
+        mgVPA=args.mgVPA, activityModel=args.activityModel, cutpointsModelMixed= args.cutpointsModelMixed,
         intensityDistribution=args.intensityDistribution, psd=args.psd, 
         fourierFrequency=args.fourierFrequency, m10l5=args.m10l5, 
         fourierWithAcc=args.fourierWithAcc, verbose=args.verbose)
