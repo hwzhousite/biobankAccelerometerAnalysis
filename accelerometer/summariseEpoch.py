@@ -123,15 +123,11 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     # rewrite labels if using mixed cutpoint- machine-learned models
     if cutpointsModelMixed: 
         labelsMixed = e['VPA'].replace(True, "mixedVigorous")
-        print(labelsMixed.head())
         labelsMixed.where(cond = ((e['MVPA'] == False) | (e['VPA'] == True)),  other = "mixedModerate", inplace = True) 
-        print(labelsMixed.head())
         labelsMixed.where(cond = (e['MVPA'] == True),  other = e['label'], inplace = True)
         labelsMixed.where(cond = (labelsMixed != 'sedentary'), other = 'mixedSedentary', inplace = True)
         labelsMixed.where(cond = (labelsMixed != 'sleep'), other = 'mixedSleep', inplace = True)
-        print(labelsMixed.head())
         labelsMixed.where(cond = ((labelsMixed == 'mixedSedentary') | (labelsMixed == 'mixedSleep') | (labelsMixed== 'mixedModerate') | (labelsMixed== 'mixedVigorous')), other = "mixedLight", inplace = True)
-        print(labelsMixed.head())
         e['label'] = labelsMixed
         labels = e['label'].unique().tolist()
         print(labels)
