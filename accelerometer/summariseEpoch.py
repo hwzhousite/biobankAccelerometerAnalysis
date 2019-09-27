@@ -117,7 +117,7 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     
     # rewrite labels if using mixed cutpoint- machine-learned models
     if cutpointsModelMixed:
-        e, labels = reassignActToMixed(e, labels)
+        e, labels = reassignActToMixed(e, labels, mgMVPA, mgVPA)
 
     # calculate imputation values to replace nan PA metric values
     e = perform_wearTime_imputation(e, verbose)
@@ -533,7 +533,7 @@ def calculateM10L5(e, epochPeriod, summary):
         rel_amp = (M10-L5)/(M10+L5)
     summary['M10L5'] = rel_amp
     
-def reassignActToMixed(e, labels):
+def reassignActToMixed(e, labels, mgMVPA, mgVPA):
     """Reassign activity classification labels to a mixed grouping which uses cutpoints
     for moderate and vigorous activity and machine-learned classes for sleep and sedentary. 
    Remaining time is assigned to light activity. 
