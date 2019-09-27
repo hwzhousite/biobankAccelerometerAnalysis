@@ -114,16 +114,17 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     # emmo = 1 - sqrt(x, y, z)
     # enmoTrunc = max(enmo, 0)
     e['acc'] = e['enmoTrunc'] * 1000 # convert enmoTrunc to milli-G units
+    
+    # rewrite labels if using mixed cutpoint- machine-learned models
+    if cutpointsModelMixed:
+        e, labels = reassignActToMixed(e, labels)
 
     # calculate imputation values to replace nan PA metric values
     e = perform_wearTime_imputation(e, verbose)
     e['MVPA'] = e['accImputed'] >= mgMVPA
     e['VPA'] = e['accImputed'] >= mgVPA
 
-    # rewrite labels if using mixed cutpoint- machine-learned models
-    if cutpointsModelMixed:
-        e, labels = reassignActToMixed(e, labels)
-        
+            
     # calculate empirical cumulative distribution function of vector magnitudes
     if intensityDistribution:
         calculateECDF(e, 'acc', summary)
@@ -535,7 +536,7 @@ def calculateM10L5(e, epochPeriod, summary):
 def reassignActToMixed(e, labels):
     """Reassign activity classification labels to a mixed grouping which uses cutpoints
     for moderate and vigorous activity and machine-learned classes for sleep and sedentary. 
-    Remaining time is assigned to light activity. 
+   Remaining time is assigned to light activity. 
 
     :param pandas.DataFrame e: Pandas dataframe of epoch data. 
     :param list(str) labels: Input activity state labels. Currently, this only works with a labelling including 'sedentary' and 'sleep' (e.g. Doherty 2018 models). 
@@ -545,19 +546,10 @@ def reassignActToMixed(e, labels):
     :return: list of labels in the new labelling. 
     """
     
-    labelsMixed = e['VPA'].replace(True, "mixedVigorous")
-    labelsMixed.loc[((e['MVPA'] == True) & (e['VPA'] == False))] = "mixedModerate" 
-    labelsMixed.loc[(e['MVPA'] == False)] = e['label']
-    labelsMixed.loc[labelsMixed == 'sedentary'] = 'mixedSedentary'
-    labelsMixed.loc[labelsMixed == 'sleep'] = 'mixedSleep'
-    labelsMixed.loc[!((labelsMixed == 'mixedSedentary') | (labelsMixed == 'mixedSleep') | (labelsMixed== 'mixedModerate') | (labelsMixed== 'mixedVigorous'))] = "mixedLight"
-    e['label'] = labelsMixed
+    e.loc[(e['acc']>= mgVPA) ,'label'] = "vigorous_cp"
+    e.loc[((e['acc']>= mgMVPA) & (e['acc'] < mgVPA)) ,'label'] = "moderate_cp"
+    e.loc[((e['acc'] < mgMVPA) & ~((e['label'] == "sleep") |(e['label'] =="sedentary"))) ,'label'] = "light"
     labels = e['label'].unique().tolist()
-    e['mixedLightImputed'] = (e['label'] == 'mixedLight')
-    e['mixedVigorousImputed']= (e['label'] == 'mixedVigorous')
-    e['mixedModerateImputed']= (e['label'] == 'mixedModerate')
-    e['mixedSedentaryImputed']= (e['label'] == 'mixedSedentary')
-    e['mixedSleepImputed']= (e['label'] == 'mixedSleep')
     return e, labels
 
     
