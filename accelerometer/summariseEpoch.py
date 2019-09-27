@@ -117,7 +117,7 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     
     # rewrite labels if using mixed cutpoint- machine-learned models
     if cutpointsModelMixed:
-        e, labels = reassignActToMixed(e, labels, mgMVPA, mgVPA)
+        e, labels = accClassification.reassignActToMixed(e, labels, mgMVPA, mgVPA)
 
     # calculate imputation values to replace nan PA metric values
     e = perform_wearTime_imputation(e, verbose)
@@ -533,32 +533,6 @@ def calculateM10L5(e, epochPeriod, summary):
         rel_amp = (M10-L5)/(M10+L5)
     summary['M10L5'] = rel_amp
     
-def reassignActToMixed(e, labels, mgMVPA, mgVPA):
-    """Reassign activity classification labels to a mixed grouping which uses cutpoints
-    for moderate and vigorous activity and machine-learned classes for sleep and sedentary. 
-   Remaining time is assigned to light activity. 
-
-    :param pandas.DataFrame e: Pandas dataframe of epoch data. 
-    :param list(str) labels: Input activity state labels. Currently, this only works with a labelling including 'sedentary' and 'sleep' (e.g. Doherty 2018 models). 
-
-    :return: pandas.DataFrame e with rewritten dict <summary> keys 'label' with new class labels. 
-    
-    :return: list of labels in the new labelling. 
-    """
-    
-    e.loc[(e['acc']>= mgVPA) ,'label'] = "vigorous_cp"
-    e.loc[((e['acc']>= mgMVPA) & (e['acc'] < mgVPA)) ,'label'] = "moderate_cp"
-    e.loc[((e['acc'] < mgMVPA) & ~((e['label'] == "sleep") |(e['label'] =="sedentary"))) ,'label'] = "light"
-    labels = e['label'].unique().tolist()
-    for l in labels:
-        e[l] = 0
-        e.loc[e['label']==l, l] = 1
-    # null values aren't one-hot encoded, so set such instances to NaN
-    for l in labels:
-        e.loc[e[labels].sum(axis=1) == 0, l] = np.nan
-
-    return e, labels
-
     
 def writeMovementSummaries(e, labels, summary):
     """Write overall summary stats for each activity type to summary dict

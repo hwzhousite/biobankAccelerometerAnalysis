@@ -80,6 +80,32 @@ def activityClassification(epochFile,
         X.loc[X[labels].sum(axis=1) == 0, l] = np.nan
     return X, labels
 
+def reassignActToMixed(e, labels, mgMVPA, mgVPA):
+    """Reassign activity classification labels to a mixed grouping which uses cutpoints
+    for moderate and vigorous activity and machine-learned classes for sleep and sedentary. 
+   Remaining time is assigned to light activity. 
+
+    :param pandas.DataFrame e: Pandas dataframe of epoch data. 
+    :param list(str) labels: Input activity state labels. Currently, this only works with a labelling including 'sedentary' and 'sleep' (e.g. Doherty 2018 models). 
+
+    :return: pandas.DataFrame e with rewritten dict <summary> keys 'label' with new class labels. 
+    
+    :return: list of labels in the new labelling. 
+    """
+    
+    e.loc[(e['acc']>= mgVPA) ,'label'] = "vigorous_cp"
+    e.loc[((e['acc']>= mgMVPA) & (e['acc'] < mgVPA)) ,'label'] = "moderate_cp"
+    e.loc[((e['acc'] < mgMVPA) & ~((e['label'] == "sleep") |(e['label'] =="sedentary"))) ,'label'] = "light"
+    labels = ["vigorous_cp", "moderate_cp", "light", "sleep", "sedentary"]
+    for l in labels:
+        e[l] = 0
+        e.loc[e['label']==l, l] = 1
+    # null values aren't one-hot encoded, so set such instances to NaN
+    for l in labels:
+        e.loc[e[labels].sum(axis=1) == 0, l] = np.nan
+
+    return e, labels
+
 
 
 MIN_TRAIN_CLASS_COUNT = 100
