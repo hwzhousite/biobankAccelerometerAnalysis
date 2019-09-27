@@ -123,21 +123,7 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     # rewrite labels if using mixed cutpoint- machine-learned models
     if cutpointsModelMixed:
         e, labels = reassignActToMixed(e, labels)
-        labelsMixed = e['VPA'].replace(True, "mixedVigorous")
-        labelsMixed.loc[((e['MVPA'] == True) & (e['VPA'] == False))] = "mixedModerate" 
-        labelsMixed.loc[(e['MVPA'] == False)] = e['label']
-        labelsMixed.loc[labelsMixed == 'sedentary'] = 'mixedSedentary'
-        labelsMixed.loc[labelsMixed == 'sleep'] = 'mixedSleep'
-        labelsMixed.loc[!((labelsMixed == 'mixedSedentary') | (labelsMixed == 'mixedSleep') | (labelsMixed== 'mixedModerate') | (labelsMixed== 'mixedVigorous'))] = "mixedLight"
-        e['label'] = labelsMixed
-        labels = e['label'].unique().tolist()
-        e['mixedLightImputed'] = (e['label'] == 'mixedLight')
-        e['mixedVigorousImputed']= (e['label'] == 'mixedVigorous')
-        e['mixedModerateImputed']= (e['label'] == 'mixedModerate')
-        e['mixedSedentaryImputed']= (e['label'] == 'mixedSedentary')
-        e['mixedSleepImputed']= (e['label'] == 'mixedSleep')
-
-
+        
     # calculate empirical cumulative distribution function of vector magnitudes
     if intensityDistribution:
         calculateECDF(e, 'acc', summary)
@@ -546,6 +532,33 @@ def calculateM10L5(e, epochPeriod, summary):
         rel_amp = (M10-L5)/(M10+L5)
     summary['M10L5'] = rel_amp
     
+def reassignActToMixed(e, labels):
+    """Reassign activity classification labels to a mixed grouping which uses cutpoints
+    for moderate and vigorous activity and machine-learned classes for sleep and sedentary. 
+    Remaining time is assigned to light activity. 
+
+    :param pandas.DataFrame e: Pandas dataframe of epoch data. 
+    :param list(str) labels: Input activity state labels. Currently, this only works with a labelling including 'sedentary' and 'sleep' (e.g. Doherty 2018 models). 
+
+    :return: pandas.DataFrame e with rewritten dict <summary> keys 'label' with new class labels. 
+    
+    :return: list of labels in the new labelling. 
+    """
+    
+    labelsMixed = e['VPA'].replace(True, "mixedVigorous")
+    labelsMixed.loc[((e['MVPA'] == True) & (e['VPA'] == False))] = "mixedModerate" 
+    labelsMixed.loc[(e['MVPA'] == False)] = e['label']
+    labelsMixed.loc[labelsMixed == 'sedentary'] = 'mixedSedentary'
+    labelsMixed.loc[labelsMixed == 'sleep'] = 'mixedSleep'
+    labelsMixed.loc[!((labelsMixed == 'mixedSedentary') | (labelsMixed == 'mixedSleep') | (labelsMixed== 'mixedModerate') | (labelsMixed== 'mixedVigorous'))] = "mixedLight"
+    e['label'] = labelsMixed
+    labels = e['label'].unique().tolist()
+    e['mixedLightImputed'] = (e['label'] == 'mixedLight')
+    e['mixedVigorousImputed']= (e['label'] == 'mixedVigorous')
+    e['mixedModerateImputed']= (e['label'] == 'mixedModerate')
+    e['mixedSedentaryImputed']= (e['label'] == 'mixedSedentary')
+    e['mixedSleepImputed']= (e['label'] == 'mixedSleep')
+    return e, labels
 
     
 def writeMovementSummaries(e, labels, summary):
