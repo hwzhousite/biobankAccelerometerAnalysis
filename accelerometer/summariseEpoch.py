@@ -550,6 +550,13 @@ def reassignActToMixed(e, labels, mgMVPA, mgVPA):
     e.loc[((e['acc']>= mgMVPA) & (e['acc'] < mgVPA)) ,'label'] = "moderate_cp"
     e.loc[((e['acc'] < mgMVPA) & ~((e['label'] == "sleep") |(e['label'] =="sedentary"))) ,'label'] = "light"
     labels = e['label'].unique().tolist()
+    for l in labels:
+        e[l] = 0
+        e.loc[e['label']==l, l] = 1
+    # null values aren't one-hot encoded, so set such instances to NaN
+    for l in labels:
+        e.loc[e[labels].sum(axis=1) == 0, l] = np.nan
+
     return e, labels
 
     
