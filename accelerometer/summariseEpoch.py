@@ -121,16 +121,16 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     e['VPA'] = e['accImputed'] >= mgVPA
 
     # rewrite labels if using mixed cutpoint- machine-learned models
-    if cutpointsModelMixed: 
+    if cutpointsModelMixed:
+        e, labels = reassignActToMixed(e, labels)
         labelsMixed = e['VPA'].replace(True, "mixedVigorous")
-        labelsMixed.where(cond = ((e['MVPA'] == False) | (e['VPA'] == True)),  other = "mixedModerate", inplace = True) 
-        labelsMixed.where(cond = (e['MVPA'] == True),  other = e['label'], inplace = True)
-        labelsMixed.where(cond = (labelsMixed != 'sedentary'), other = 'mixedSedentary', inplace = True)
-        labelsMixed.where(cond = (labelsMixed != 'sleep'), other = 'mixedSleep', inplace = True)
-        labelsMixed.where(cond = ((labelsMixed == 'mixedSedentary') | (labelsMixed == 'mixedSleep') | (labelsMixed== 'mixedModerate') | (labelsMixed== 'mixedVigorous')), other = "mixedLight", inplace = True)
+        labelsMixed.loc[((e['MVPA'] == True) & (e['VPA'] == False))] = "mixedModerate" 
+        labelsMixed.loc[(e['MVPA'] == False)] = e['label']
+        labelsMixed.loc[labelsMixed == 'sedentary'] = 'mixedSedentary'
+        labelsMixed.loc[labelsMixed == 'sleep'] = 'mixedSleep'
+        labelsMixed.loc[!((labelsMixed == 'mixedSedentary') | (labelsMixed == 'mixedSleep') | (labelsMixed== 'mixedModerate') | (labelsMixed== 'mixedVigorous'))] = "mixedLight"
         e['label'] = labelsMixed
         labels = e['label'].unique().tolist()
-        print(labels)
         e['mixedLightImputed'] = (e['label'] == 'mixedLight')
         e['mixedVigorousImputed']= (e['label'] == 'mixedVigorous')
         e['mixedModerateImputed']= (e['label'] == 'mixedModerate')
