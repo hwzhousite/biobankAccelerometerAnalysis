@@ -8,6 +8,7 @@
 *.jpg
 *.pdf
 *.json
+debugging.py
 *.cwa
 *.csv
 *.project
@@ -16,3 +17,4 @@
 *cmds.txt
 dataBeforeChanges
 plots
+accPlotModified.pywq
