@@ -12,3 +12,7 @@
 *.csv
 *.project
 *.classpath
+*cmds.sh
+*cmds.txt
+dataBeforeChanges
+plots

@@ -114,30 +114,17 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     # emmo = 1 - sqrt(x, y, z)
     # enmoTrunc = max(enmo, 0)
     e['acc'] = e['enmoTrunc'] * 1000 # convert enmoTrunc to milli-G units
+    
+    # rewrite labels if using mixed cutpoint- machine-learned models
+    if cutpointsModelMixed:
+        e, labels = accClassification.reassignActToMixed(e, labels, mgMVPA, mgVPA)
 
     # calculate imputation values to replace nan PA metric values
     e = perform_wearTime_imputation(e, verbose)
     e['MVPA'] = e['accImputed'] >= mgMVPA
     e['VPA'] = e['accImputed'] >= mgVPA
 
-    # rewrite labels if using mixed cutpoint- machine-learned models
-    if cutpointsModelMixed: 
-        labelsMixed = e['VPA'].replace(True, "mixedVigorous")
-        labelsMixed.where(cond = ((e['MVPA'] == False) | (e['VPA'] == True)),  other = "mixedModerate", inplace = True) 
-        labelsMixed.where(cond = (e['MVPA'] == True),  other = e['label'], inplace = True)
-        labelsMixed.where(cond = (labelsMixed != 'sedentary'), other = 'mixedSedentary', inplace = True)
-        labelsMixed.where(cond = (labelsMixed != 'sleep'), other = 'mixedSleep', inplace = True)
-        labelsMixed.where(cond = ((labelsMixed == 'mixedSedentary') | (labelsMixed == 'mixedSleep') | (labelsMixed== 'mixedModerate') | (labelsMixed== 'mixedVigorous')), other = "mixedLight", inplace = True)
-        e['label'] = labelsMixed
-        labels = e['label'].unique().tolist()
-        print(labels)
-        e['mixedLightImputed'] = (e['label'] == 'mixedLight')
-        e['mixedVigorousImputed']= (e['label'] == 'mixedVigorous')
-        e['mixedModerateImputed']= (e['label'] == 'mixedModerate')
-        e['mixedSedentaryImputed']= (e['label'] == 'mixedSedentary')
-        e['mixedSleepImputed']= (e['label'] == 'mixedSleep')
-
-
+            
     # calculate empirical cumulative distribution function of vector magnitudes
     if intensityDistribution:
         calculateECDF(e, 'acc', summary)
@@ -438,7 +425,7 @@ def calculatePSD(e, epochPeriod, fourierWithAcc, labels, summary):
     
     :param pandas.DataFrame e: Pandas dataframe of epoch data
     :param int epochPeriod: Size of epoch time window (in seconds)
-    :paran bool fourierWithAcc:True calculates fourier done with acceleration data instead of sleep data
+    :param bool fourierWithAcc:True calculates fourier done with acceleration data instead of sleep data
     :param list(str) labels: Activity state labels
     :param dict summary: Output dictionary containing all summary metrics
 
@@ -461,7 +448,7 @@ def calculatePSD(e, epochPeriod, fourierWithAcc, labels, summary):
     n = len(y)
     k = len(y)*epochPeriod/(60*60*24)
     e = -2.j * np.pi * k * np.arange(n) / n
-    # finds the power spectral density for a one day cycle using frouier analysis 
+    # finds the power spectral density for a one day cycle using fourier analysis 
     res = np.sum(np.exp(e) * y, axis=-1)/n
     PSD = np.abs(res)**2
     summary['PSD'] = PSD
@@ -471,7 +458,7 @@ def calculateFourierFreq(e, epochPeriod, fourierWithAcc, labels, summary):
     
     :param pandas.DataFrame e: Pandas dataframe of epoch data
     :param int epochPeriod: Size of epoch time window (in seconds)
-    :paran bool fourierWithAcc:True calculates fourier done with acceleration data instead of sleep data
+    :paran bool fourierWithAcc: True calculates fourier done with acceleration data instead of sleep data
     :param list(str) labels: Activity state labels
     :param dict summary: Output dictionary containing all summary metrics
 
@@ -505,7 +492,7 @@ def calculateFourierFreq(e, epochPeriod, fourierWithAcc, labels, summary):
     summary['fourier-frequency'] = freq_mx
     
 def calculateM10L5(e, epochPeriod, summary):
-    """Calculates the M10 L5 relatice amplitude from the average acceleration from
+    """Calculates the M10 L5 relative amplitude from the average acceleration from
     the ten most active hours and 5 least most active hours 
     
     :param pandas.DataFrame e: Pandas dataframe of epoch data
@@ -521,11 +508,11 @@ def calculateM10L5(e, epochPeriod, summary):
     days_split = []
     for n in range(num_days):
         #creates a new list which is used to identify the 24 hour periods in the data frame
-        days_split += [n for x in e.index if e.index[0] + timedelta(days=n) <= x <= e.index[0] + timedelta(days=n+1)]
+        days_split += [n for x in e.index if e.index[0] + timedelta(days=n) <= x < e.index[0] + timedelta(days=n+1)]
     dct = {}
     for i in range(num_days):
-        #create new lists with the accleration data from each 24 hour period
-        dct['day_%s' % i] = [e.iloc[n,-3] for n in range(len(days_split)) if days_split[n]==i]    
+        #create new lists with the acceleration data from each 24 hour period
+        dct['day_%s' % i] = [e.loc[n,'accImputed'] for n in range(len(days_split)) if days_split[n]==i]    
     dct_10 = {}
     dct_5 = {}
     for i in dct:
@@ -535,18 +522,19 @@ def calculateM10L5(e, epochPeriod, summary):
     avg_10 = {}
     avg_5 = {}
     #   average acceleration (for each 30s) for the max and min windows        
-    for i in dct_10:
+    for i in dct:
         avg_10['%s' %i ] = (np.max(dct_10['%s' %i]))/TEN_HOURS
-    for i in dct_5:
+    for i in dct:
         avg_5['%s' %i] = (np.min(dct_5['%s' %i]))/FIVE_HOURS
 
     if num_days > 0:
         M10 = sum(avg_10.values())/num_days
         L5 = sum(avg_5.values())/num_days
         rel_amp = (M10-L5)/(M10+L5)
+    if num_days < 1:
+        rel_amp = 'NA'
     summary['M10L5'] = rel_amp
     
-
     
 def writeMovementSummaries(e, labels, summary):
     """Write overall summary stats for each activity type to summary dict
