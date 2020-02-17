@@ -18,7 +18,7 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     mgVPA=425, activityModel="activityModels/doherty2018.tar",
     cutpointsModelMixed= False, 
     intensityDistribution=False, psd=False, fourierFrequency=False, m10l5=False, 
-    verbose=False, fourierWithAcc=False):
+    verbose=False, fourierWithAcc=False, mxMetrics = False):
     """Calculate overall activity summary from <epochFile> data
 
     Get overall activity summary from input <epochFile>. This is achieved by
@@ -440,12 +440,12 @@ def calculateMXMetrics(e, inputCol, summary):
 
     cutvals = [1/3, 1/12, 1/24, 1/48, 1/96, 5/(60*24)]
 
-    sorted = pd.sort_values(e[inputCol], ascending = False)
-    l = sorted.len()
+    sorted = e[inputCol].sort_values(ascending = False)
+    l = sorted.size
 
     accVals = []
     for x in cutvals: 
-        accVals.append(sorted.iloc[x*l])
+        accVals.append(sorted.iloc[int(round(x*l))])
     # and write to summary dict
     for x, accVal in zip(cutvals, accVals):
         summary[inputCol + '-MX-' + str(accUtils.formatNum(x*60*24,0)) + 'min/day'] = \
