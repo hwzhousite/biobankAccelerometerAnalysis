@@ -129,12 +129,18 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     if intensityDistribution:
         calculateECDF(e, 'acc', summary)
     
+    # circardian rhythm related traits
     if psd:
         calculatePSD(e, epochPeriod, fourierWithAcc, labels, summary)
     if fourierFrequency:
         calculateFourierFreq(e, epochPeriod, fourierWithAcc, labels, summary)
     if m10l5:
         calculateM10L5(e, epochPeriod, summary)
+
+    # mx metrics 
+    if mxMetrics: 
+        calculateMXMetrics(e, 'accImputed', summary)
+
     # main movement summaries
     writeMovementSummaries(e, labels, summary)
 
@@ -419,6 +425,32 @@ def calculateECDF(e, inputCol, summary):
     for x, ecdf in zip(ecdfXVals, accEcdf):
         summary[inputCol + '-ecdf-' + str(accUtils.formatNum(x,0)) + 'mg'] = \
             accUtils.formatNum(ecdf, 5)
+
+
+def calculateMXMetrics(e, inputCol, summary):
+    """Calculate MX metrics (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6895365/ Rowlands et al 2019)
+
+    :param pandas.DataFrame e: Pandas dataframe of epoch data
+    :param str inputCol: Column to calculate MX metrics on
+    :param dict summary: Output dictionary containing all summary metrics
+
+    :return: Write dict <summary> keys '<inputCol>-mx-<level...>'
+    :rtype: void
+    """
+
+    cutvals = [1/3, 1/12, 1/24, 1/48, 1/96, 5/(60*24)]
+
+    sorted = pd.sort_values(e[inputCol], ascending = False)
+    l = sorted.len()
+
+    accVals = []
+    for x in cutvals: 
+        accVals.append(sorted.iloc[x*l])
+    # and write to summary dict
+    for x, accVal in zip(cutvals, accVals):
+        summary[inputCol + '-MX-' + str(accUtils.formatNum(x*60*24,0)) + 'min/day'] = \
+            accUtils.formatNum(accVal, 5)
+
 
 def calculatePSD(e, epochPeriod, fourierWithAcc, labels, summary):
     """Calculate the power spectral density from fourier analysis of a 1 day frequency

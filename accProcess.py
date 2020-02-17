@@ -193,6 +193,8 @@ def main():
                             help="""True will do the fourier analysis with 
                                     acceleration data instead of sleep signal
                              (default : %(default)s)""")
+    parser.add_argument('--mxMetrics', metavar= 'True/False', default=False, type = str2bool, help = """Save so-called MX metrics
+                             (default : %(default)s)""")
 
     #
     # check that enough command line arguments are entered
@@ -301,7 +303,7 @@ def main():
         mgVPA=args.mgVPA, activityModel=args.activityModel, cutpointsModelMixed= args.cutpointsModelMixed,
         intensityDistribution=args.intensityDistribution, psd=args.psd, 
         fourierFrequency=args.fourierFrequency, m10l5=args.m10l5, 
-        fourierWithAcc=args.fourierWithAcc, verbose=args.verbose)
+        fourierWithAcc=args.fourierWithAcc, mxMetrics=args.mxMetrics, verbose=args.verbose)
 
     # generate time series file (note: this will also resample to epochData so do this last)
     accelerometer.accUtils.generateTimeSeries(epochData, args.tsFile,

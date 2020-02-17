@@ -21,4 +21,5 @@ plots
 accelerometer/OLDsummariseEpoch.py
 =======
 *.pywq
+accPlotLocalVersion.py
 >>>>>>> 2b6711b14637589b476e259e97ae57d9682907f1
