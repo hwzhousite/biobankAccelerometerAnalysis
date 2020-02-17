@@ -23,8 +23,8 @@ WILLETS_SciReports_COLOURS = {'sleep':'blue', 'sit.stand':'red',
     'vehicle':'darkorange', 'walking':'lightgreen', 'mixed':'green',
     'bicycling':'purple'}
 
-DOHERTY_NatComms_COLOURS_MIXED = {'mixedSleep':'blue', 'mixedSedentary':'red',
-    'mixedLight':'darkorange', 'mixedModerate':'lightgreen', 'mixedVigorous':'green'}
+DOHERTY_NatComms_COLOURS_MIXED = {'sleep':'blue', 'sedentary':'red',
+        'light':'darkorange', 'moderate_cp':'lightgreen', 'vigorous_cp':'green', 'inf_or_null': 'white'}
 
 
 def main():
