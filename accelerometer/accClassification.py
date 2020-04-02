@@ -383,7 +383,7 @@ def trainMETRegressionModel(trainingFile,
 
     # now write out model
     if outputModel is not None:
-        saveModelsToTar(outputModel, featureCols, rfModel)
+        saveMETModelsToTar(outputModel, featureCols, rfModel)
 
     # assess model performance on test participants
     if testParticipants is not None:
@@ -545,6 +545,36 @@ def saveModelsToTar(tarArchive, featureCols, rfModel, priors, transitions,
     os.remove(rfModelFile)
     print('Models saved to', tarArchive)
 
+def saveMETModelsToTar(tarArchive, featureCols, rfModel, featuresTxt="featureCols.txt", rfModelFile="rfModel.pkl"):
+    """Save random forest MET models to tarArchive file
+
+    Note we must use the same version of python and scikit learn as in the
+    intended deployment environment
+
+    :param str tarArchive: Output tarfile
+    :param list featureCols: Input list of feature columns
+    :param sklearn.RandomForestRegressor rfModel: Input random forest model
+   
+    :param str featuresTxt: Intermediate output txt file of features
+    :param str rfModelFile: Intermediate output random forest pickle model
+    
+    :return: tar file of RF + HMM written to tarArchive
+    :rtype: void
+    """
+
+    wristListToTxtFile(featureCols, featuresTxt)
+    joblib.dump(rfModel, rfModelFile, compress=9)
+
+    # create single .tar file...
+    tarOut = tarfile.open(tarArchive, mode='w')
+    tarOut.add(featuresTxt)
+    tarOut.add(rfModelFile)
+    tarOut.close()
+
+    # remove intermediate files
+    os.remove(featuresTxt)
+    os.remove(rfModelFile)
+    print('Models saved to', tarArchive)
 
 
 def getFileFromTar(tarArchive, targetFile):
