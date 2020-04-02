@@ -69,7 +69,7 @@ def activityClassification(epochFile,
     #! we need to force type
     met_vals = np.load(getFileFromTar(activityModel, 'METs.npy'))
     met_dict = dict(zip(labels, met_vals))
-    X.loc[~null_rows, 'MET'] = X.loc[~null_rows, 'label'].replace(met_dict).astype('float')
+    X.loc[~null_rows, 'METFromActivity'] = X.loc[~null_rows, 'label'].replace(met_dict).astype('float')
 
     # apply one-hot encoding
     for l in labels:
@@ -108,8 +108,8 @@ def METPrediction(epochFile,
         null_rows = X[featureCols].isnull().any(axis=1)
     print(null_rows.sum(), " null or inf rows out of ", len(X.index))
 
-    X['MET'] = 'none'
-    X.loc[null_rows, 'MET'] = 'inf_or_null'
+    X['METPredicted'] = 'none'
+    X.loc[null_rows, 'METPredicted'] = 'inf_or_null'
     #setup RF
     # ignore warnings on deployed model using different version of pandas
     with warnings.catch_warnings():
@@ -120,7 +120,7 @@ def METPrediction(epochFile,
     # free memory
     del rf
     #save predictions to pandas dataframe
-    X.loc[~null_rows, 'MET'] = rfPredictions
+    X.loc[~null_rows, 'METPredicted'] = rfPredictions
 
     return X
 
