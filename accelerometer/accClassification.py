@@ -80,6 +80,50 @@ def activityClassification(epochFile,
         X.loc[X[labels].sum(axis=1) == 0, l] = np.nan
     return X, labels
 
+def METPrediction(epochFile,
+    metModel=None):
+    """Perform MET prediction from epoch feature data
+
+    Based on a balanced random forest trained using a
+    free-living groundtruth to predict METs from
+    accelerometer data.
+
+    :param str epochFile: Input csv file of processed epoch data
+    :param str metModel: Input tar model file which contains random forest
+        pickle model. 
+
+    :return: Pandas dataframe of epoch data with MET prediction
+    :rtype: pandas.DataFrame
+
+
+    """
+
+    X = epochFile
+    featureColsFile = getFileFromTar(metModel, 'featureCols.txt').getvalue()
+    featureColsList = featureColsFile.decode().split('\n')
+    featureCols = list(filter(None,featureColsList))
+
+    print(X[featureCols].isnull().any(axis=1).sum(), "NaN rows")
+    with pd.option_context('mode.use_inf_as_null', True):
+        null_rows = X[featureCols].isnull().any(axis=1)
+    print(null_rows.sum(), " null or inf rows out of ", len(X.index))
+
+    X['MET'] = 'none'
+    X.loc[null_rows, 'MET'] = 'inf_or_null'
+    #setup RF
+    # ignore warnings on deployed model using different version of pandas
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        rf = joblib.load(getFileFromTar(metModel, 'rfModel.pkl'))
+
+    rfPredictions = rf.predict(X.loc[~null_rows,featureCols])
+    # free memory
+    del rf
+    #save predictions to pandas dataframe
+    X.loc[~null_rows, 'MET'] = rfPredictions
+
+    return X
+
 def reassignActToMixed(e, labels, mgMVPA, mgVPA):
     """Reassign activity classification labels to a mixed grouping which uses cutpoints
     for moderate and vigorous activity and machine-learned classes for sleep and sedentary. 
@@ -273,6 +317,85 @@ def train_HMM(rfModel, y_trainF, labelCol):
     return states, prior, emissions, transitions
 
 
+def trainMETRegressionModel(trainingFile,
+    labelCol="label", participantCol="participant",
+    atomicLabelCol="annotation", metCol="MET",
+    featuresTxt="activityModels/features.txt",
+    trainParticipants=None, testParticipants=None,
+    rfThreads=1, rfTrees=1000,
+    outputPredict="activityModels/test-predictions.csv",
+    outputModel=None):
+    """Train model to predict MET values from epoch feature data
+
+    Based on a balanced random forest (**NB currently without time smoothing**), 
+    trains a regression model to predict MET values from accelerometer data
+    accelerometer data.
+
+    :param str trainingFile: Input csv file of training data, pre-sorted by time
+    :param str labelCol: Input label column
+    :param str participantCol: Input participant column
+    :param str atomicLabelCol: Input 'atomic' annotation e.g. 'walking with dog'
+        vs. 'walking'
+    :param str metCol: Input MET column
+    :param str featuresTxt: Input txt file listing feature column names
+    :param str trainParticipants: Input comma separated list of participant IDs
+        to train on.
+    :param str testParticipants: Input comma separated list of participant IDs
+        to test on.
+    :param int rfThreads: Input num threads to use when training random forest
+    :param int rfTrees: Input num decision trees to include in random forest
+    :param str outputPredict: Output CSV of person, label, predicted
+    :param str outputModel: Output tarfile object which contains random forest
+        pickle model, HMM priors/transitions/emissions npy files, and npy file
+        of METs for each activity state. Will only output trained model if this
+        is not null e.g. "activityModels/sample-model.tar"
+
+    :return: New model written to <outputModel> OR csv of test predictions
+        written to <outputPredict>
+    :rtype: void
+    """
+
+    # load list of features to use in analysis
+    featureCols = getListFromTxtFile(featuresTxt)
+
+    #load in participant information, and remove null/messy labels/features
+    train = pd.read_csv(trainingFile)
+    train = train[~pd.isnull(train[labelCol])]
+    allCols = [participantCol, labelCol, atomicLabelCol, metCol] + featureCols
+    train = train[allCols].dropna(axis=0, how='any')
+
+    # reduce size of train/test sets if we are training/testing on some people
+    if testParticipants is not None:
+        testPIDs = testParticipants.split(',')
+        test = train[train[participantCol].isin(testPIDs)]
+        train = train[~train[participantCol].isin(testPIDs)]
+    if trainParticipants is not None:
+        trainPIDs = trainParticipants.split(',')
+        train = train[train[participantCol].isin(trainPIDs)]
+
+    #train Random Forest model
+    # first "monkeypatch" RF function to perform per-class balancing
+    MIN_TRAIN_CLASS_COUNT = train[labelCol].value_counts().min()
+    forest._parallel_build_trees = _parallel_build_trees
+    # then train RF model (which include per-class balancing)
+    rfRegressor = RandomForestRegressor(n_estimators=rfTrees,
+                                            n_jobs=rfThreads, oob_score=True)
+    rfModel = rfRegressor.fit(train[featureCols], train[metCol].tolist())
+
+    # now write out model
+    if outputModel is not None:
+        saveModelsToTar(outputModel, featureCols, rfModel, priors, transitions,
+            emissions, METs)
+
+    # assess model performance on test participants
+    if testParticipants is not None:
+        print('test on participant(s):, ', testParticipants)
+        rfPredictions = rfModel.predict(test[featureCols])
+        test['predicted'] = rfPredictions
+        # and write out to file
+        outCols = [participantCol, metCol, 'predicted']
+        test[outCols].to_csv(outputPredict, index=False)
+        print('Output predictions written to: ', outputPredict)
 
 def viterbi(observations, states, priors, transitions, emissions,
             probabilistic=False):
