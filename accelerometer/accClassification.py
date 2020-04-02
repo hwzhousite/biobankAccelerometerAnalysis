@@ -5,6 +5,7 @@ import numpy as np
 import os
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor
 import sklearn.ensemble.forest as forest
 import joblib
 import tarfile
