@@ -347,9 +347,7 @@ def trainMETRegressionModel(trainingFile,
     :param int rfTrees: Input num decision trees to include in random forest
     :param str outputPredict: Output CSV of person, label, predicted
     :param str outputModel: Output tarfile object which contains random forest
-        pickle model, HMM priors/transitions/emissions npy files, and npy file
-        of METs for each activity state. Will only output trained model if this
-        is not null e.g. "activityModels/sample-model.tar"
+        pickle model. 
 
     :return: New model written to <outputModel> OR csv of test predictions
         written to <outputPredict>
@@ -385,8 +383,7 @@ def trainMETRegressionModel(trainingFile,
 
     # now write out model
     if outputModel is not None:
-        saveModelsToTar(outputModel, featureCols, rfModel, priors, transitions,
-            emissions, METs)
+        saveModelsToTar(outputModel, featureCols, rfModel)
 
     # assess model performance on test participants
     if testParticipants is not None:
