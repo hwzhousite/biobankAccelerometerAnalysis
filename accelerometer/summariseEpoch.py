@@ -13,9 +13,9 @@ from scipy import fftpack
 from datetime import timedelta
 
 def getActivitySummary(epochFile, nonWearFile, summary,
-    activityClassification=True, startTime=None, endTime=None,
+    activityClassification=True, metPrediction = False, startTime=None, endTime=None,
     epochPeriod=30, stationaryStd=13, minNonWearDuration=60, mgMVPA=100,
-    mgVPA=425, activityModel="activityModels/doherty2018.tar",
+    mgVPA=425, activityModel="activityModels/doherty2018.tar",   metModel = None, 
     cutpointsModelMixed= False, 
     intensityDistribution=False, psd=False, fourierFrequency=False, m10l5=False, 
     verbose=False, fourierWithAcc=False, mxMetrics = False):
@@ -26,14 +26,18 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     2) check if data occurs at a daylight savings crossover
     3) calculate wear-time statistics, and write nonWear episodes to file
     4) predict activity from features, and add label column
-    5) calculate imputation values to replace nan PA metric values
-    6) calculate empirical cumulative distribution function of vector magnitudes
-    7) derive main movement summaries (overall, weekday/weekend, and hour)
+    5) if selected, predict MET values from features, and add a METPredicted column
+    6) calculate imputation values to replace nan PA metric values
+    7) calculate empirical cumulative distribution function of vector magnitudes
+    8) if selected, calculate selected circadian traits 
+    9) if selected, calculate MX metrics
+    10) derive main movement summaries (overall, weekday/weekend, and hour)
 
     :param str epochFile: Input csv.gz file of processed epoch data
     :param str nonWearFile: Output filename for non wear .csv.gz episodes
     :param dict summary: Output dictionary containing all summary metrics
     :param bool activityClassification: Perform machine learning of activity states
+    :param bool metPrediction: Perform machine learning of METs
     :param datetime startTime: Remove data before this time in analysis
     :param datetime endTime: Remove data after this time in analysis
     :param int epochPeriod: Size of epoch time window (in seconds)
@@ -44,6 +48,8 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     :param str activityModel: Input tar model file which contains random forest
         pickle model, HMM priors/transitions/emissions npy files, and npy file
         of METS for each activity state
+    :param str metModel: Input tar model file which contains random forest
+        pickle model. 
     :param bool intensityDistribution: Add intensity outputs to dict <summary>
     :param bool verbose: Print verbose output
 
@@ -105,9 +111,14 @@ def getActivitySummary(epochFile, nonWearFile, summary,
 
     # predict activity from features, and add label column
     if activityClassification:
-        e, labels = accClassification.activityClassification(e, activityModel)
+        e, labels = accClassification.activityClassification(e, activityModel) 
     else:
         labels = []
+
+    # predict activity from features, and add label column
+    if metPrediction:
+        e = accClassification.METPrediction(e, metModel) 
+
 
     # enmo : Euclidean Norm Minus One
     # Trunc :  negative values truncated to zero (i.e never negative)
