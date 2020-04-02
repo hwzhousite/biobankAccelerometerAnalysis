@@ -128,6 +128,14 @@ def main():
     parser.add_argument('--activityModel', type=str,
                             default="activityModels/doherty2018.tar",
                             help="""trained activity model .tar file""")
+    parser.add_argument('--metPrediction',
+                            metavar='True/False', default=True, type=str2bool,
+                            help="""Use pre-trained random forest to predict
+                            MET expenditure
+                            (default : %(default)s)""")
+    parser.add_argument('--metModel', type=str,
+                            default= None,
+                            help="""trained activity model .tar file""")
     parser.add_argument('--cutpointsModelMixed', type=str2bool, 
                             default=False, 
                             help = """use a cutpoint activity definition for moderate and vigorous activity, with machine-learned sleep and sedentary""")
@@ -297,10 +305,10 @@ def main():
     # summarise epoch
     epochData, labels = accelerometer.summariseEpoch.getActivitySummary(
         args.epochFile, args.nonWearFile, summary,
-        activityClassification=args.activityClassification, startTime=args.startTime,
+        activityClassification=args.activityClassification, metPrediction= arg.metPrediction,  startTime=args.startTime,
         endTime=args.endTime, epochPeriod=args.epochPeriod,
         stationaryStd=args.stationaryStd, mgMVPA=args.mgMVPA,
-        mgVPA=args.mgVPA, activityModel=args.activityModel, cutpointsModelMixed= args.cutpointsModelMixed,
+        mgVPA=args.mgVPA, activityModel=args.activityModel, metModel = args.metModel, cutpointsModelMixed= args.cutpointsModelMixed,
         intensityDistribution=args.intensityDistribution, psd=args.psd, 
         fourierFrequency=args.fourierFrequency, m10l5=args.m10l5, 
         fourierWithAcc=args.fourierWithAcc, mxMetrics=args.mxMetrics, verbose=args.verbose)
