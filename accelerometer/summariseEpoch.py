@@ -18,7 +18,7 @@ def getActivitySummary(epochFile, nonWearFile, summary,
     mgVPA=425, activityModel="activityModels/doherty2018.tar",   metModel = None, 
     cutpointsModelMixed= False, 
     intensityDistribution=False, psd=False, fourierFrequency=False, m10l5=False, 
-    verbose=False, fourierWithAcc=False, mxMetrics = False):
+    verbose=False, fourierWithAcc=False, mxMetrics = False, kde = False):
     """Calculate overall activity summary from <epochFile> data
 
     Get overall activity summary from input <epochFile>. This is achieved by
@@ -50,8 +50,15 @@ def getActivitySummary(epochFile, nonWearFile, summary,
         of METS for each activity state
     :param str metModel: Input tar model file which contains random forest
         pickle model. 
+    :param bool cutpointsModelMixed: Take moderate and vigorous activity defined by cutpoints, and other activities by ML classes 
     :param bool intensityDistribution: Add intensity outputs to dict <summary>
+    :param bool psd: Calculate Power Spectral Density of the sleep wave for the 24 hour cycle.  
+    :param bool fourierFrequency: Calculate dominant frequency of sleep or acc wave (depending on fourierWithAcc)
+    :param bool m10l5: Calculate M10L5 relative amplitude score
     :param bool verbose: Print verbose output
+    :param bool fourierWithAcc: Use acceleration signal to calculate Fourier Frequency. 
+    :param bool mxMetrics: Calculate MX metrics
+    :param bool kde: Calculate Kernel Density
 
     :return: Pandas dataframe of activity epoch data
     :rtype: pandas.DataFrame
