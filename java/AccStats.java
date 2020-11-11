@@ -48,6 +48,7 @@ public class AccStats {
             xRange, yRange, zRange,
             xStd, yStd, zStd,
             xyCovariance, xzCovariance, yzCovariance,
+
         };
         
         double[] outputFeats = null;
@@ -90,6 +91,50 @@ public class AccStats {
         return Math.sqrt(x * x + y * y + z * z);
     }
 
+    public static double getRMS(double[] vals){
+	if (vals.length == 0) {
+            return Double.NaN;
+        }
+	double output = 0;
+	for( int i = 0; i < vals.length; i++){
+	   output = output + vals[i] * vals[i];
+	}
+	output = Math.sqrt(output);
+	return output;
+    }
+
+    public static double getMeanCrossingRate(double[] vals){
+	if (vals.length == 0) {
+            return Double.NaN;
+        }
+	double meanvals = mean(vals);
+	double rate = 0;
+	for(int i = 0; i < vals.length - 1; i++){
+           if(vals[i] <= meanvals && vals[i+1] > meanvals){
+	     rate = rate + 1;
+	   }
+
+	   if(vals[i] >= meanvals && vals[i+1] < meanvals){
+	     rate = rate + 1;
+	   }
+	}
+	rate = rate / (vals.length -1);
+	return rate;
+}
+
+    public static double getTAC(double[] vals){
+	if (vals.length == 0) {
+            return Double.NaN;
+        }
+        double sum = 0;
+        for (int i = 0; i < vals.length; i++) {
+            if (!Double.isNaN(vals[i])) {
+                sum = sum + Math.abs(vals[i]);
+            }
+        }
+        return sum;
+
+}
 
     private static double[] abs(double[] vals) {
         double[] output = new double[vals.length];

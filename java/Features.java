@@ -135,11 +135,51 @@ public class Features {
         if (sdMean!=0) sdCoefVariation = sdStd/sdMean;
         double[] paQuartiles = AccStats.percentiles(v, new double[] {0, 0.25, 0.5, 0.75, 1});
 
+        double xMean = AccStats.mean(wx);
+        double xStd = AccStats.stdR(wx, xMean);
+        double xCoefVariation = 0.0;
+        if (xMean!=0) xCoefVariation = xStd/xMean;
+        double[] xQuartiles = AccStats.percentiles(wx, new double[] {0, 0.25, 0.5, 0.75, 1});
+
+        double yMean = AccStats.mean(wy);
+        double yStd = AccStats.stdR(wy, yMean);
+        double yCoefVariation = 0.0;
+        if (yMean!=0) yCoefVariation = yStd/yMean;
+        double[] yQuartiles = AccStats.percentiles(wy, new double[] {0, 0.25, 0.5, 0.75, 1});
+
+        double zMean = AccStats.mean(wz);
+        double zStd = AccStats.stdR(wz, zMean);
+        double zCoefVariation = 0.0;
+        if (zMean!=0) zCoefVariation = zStd/zMean;
+        double[] zQuartiles = AccStats.percentiles(wz, new double[] {0, 0.25, 0.5, 0.75, 1});
+
         //correlations
         double autoCorrelation = AccStats.correlation(v, v, sampleRate);
+        double xautoCorrelation = AccStats.correlation(wx, wx, sampleRate);
+        double yautoCorrelation = AccStats.correlation(wy, wy, sampleRate);
+        double zautoCorrelation = AccStats.correlation(wz, wz, sampleRate);
+
         double xyCorrelation = AccStats.correlation(wx, wy);
         double xzCorrelation = AccStats.correlation(wx, wz);
         double yzCorrelation = AccStats.correlation(wy, wz);
+
+	//Root Mean Square
+        double RMS = AccStats.getRMS(v);
+        double xRMS = AccStats.getRMS(wx);
+        double yRMS = AccStats.getRMS(wy);
+        double zRMS = AccStats.getRMS(wz);
+
+	//Total Activity Count
+	double TAC = AccStats.getTAC(v);
+	double xTAC = AccStats.getTAC(wx);
+	double yTAC = AccStats.getTAC(wy);
+	double zTAC = AccStats.getTAC(wz);
+
+	//Mean Crossing Rate
+	double MCR = AccStats.getMeanCrossingRate(v);
+	double xMCR = AccStats.getMeanCrossingRate(wx);
+	double yMCR = AccStats.getMeanCrossingRate(wy);
+	double zMCR = AccStats.getMeanCrossingRate(wz);
         
         // Roll, Pitch, Yaw
         double [] angleAvgStdYZ = AccStats.angleAvgStd(wy, wz); //roll
@@ -161,10 +201,49 @@ public class Features {
             paQuartiles[4], // max
             paQuartiles[1], // 25th
             paQuartiles[3], // 75th
+            xMean,
+            xStd,
+            xCoefVariation,
+            xQuartiles[2], // median
+            xQuartiles[0], // min
+            xQuartiles[4], // max
+            xQuartiles[1], // 25th
+            xQuartiles[3], // 75th
+            yMean,
+            yStd,
+            yCoefVariation,
+            yQuartiles[2], // median
+            yQuartiles[0], // min
+            yQuartiles[4], // max
+            yQuartiles[1], // 25th
+            yQuartiles[3], // 75th
+            zMean,
+            zStd,
+            zCoefVariation,
+            zQuartiles[2], // median
+            zQuartiles[0], // min
+            zQuartiles[4], // max
+            zQuartiles[1], // 25th
+            zQuartiles[3], // 75th
             autoCorrelation,
+            xautoCorrelation,
+            yautoCorrelation,
+            zautoCorrelation,
             xyCorrelation,
             xzCorrelation,
             yzCorrelation,
+	    RMS,
+	    xRMS,
+	    yRMS,
+	    zRMS,
+            TAC,
+            xTAC,
+            yTAC,
+            zTAC,
+            MCR,
+            xMCR,
+            yMCR,
+            zMCR,
             angleAvgStdYZ[0], // mean roll
             angleAvgStdZX[0], // mean pitch
             angleAvgStdYX[0], // mean yaw
@@ -183,7 +262,16 @@ public class Features {
     private static String getSanDiegoFeaturesHeader(int numFFTbins){
         String header = "mean,sd,coefvariation";
         header += ",median,min,max,25thp,75thp";
-        header += ",autocorr,corrxy,corrxz,corryz";
+        header += ",xmean,xsd,xcoefvariation";
+        header += ",xmedian,xmin,xmax,x25thp,x75thp";
+        header += ",ymean,ysd,ycoefvariation";
+        header += ",ymedian,ymin,ymax,y25thp,y75thp";
+        header += ",zmean,zsd,zcoefvariation";
+        header += ",zmedian,zmin,zmax,z25thp,z75thp";
+        header += ",autocorr,xautocorr,yautocorr,zautocorr,corrxy,corrxz,corryz";
+	header += ",RMS,xRMS,yRMS,zRMS";
+	header += ",TAC,xTAC,yTAC,zTAC";
+	header += ",MCR,xMCR,yMCR,zMCR";
         header += ",avgroll,avgpitch,avgyaw";
         header += ",sdroll,sdpitch,sdyaw";
         header += ",rollg,pitchg,yawg";
